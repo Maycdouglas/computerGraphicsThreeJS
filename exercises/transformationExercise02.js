@@ -27,17 +27,18 @@ scene.add( axesHelper );
 let plane = createGroundPlaneXZ(20, 20)
 scene.add(plane);
 
-// cria o tampo da mesa
+// cria as esferas
 let sphereGeometry = new THREE.SphereGeometry(0.5);
-let sphere = new THREE.Mesh(sphereGeometry, material);
-// position the cube
-sphere.position.set(0.0, 0.5, 0.0);
-// add the cube to the scene
-scene.add(sphere);
 
-sphere.translateZ(8)
-sphere.translateX(-4)
+for (let i = 0; i < 12; i++) {
+  let sphere = new THREE.Mesh(sphereGeometry, material);
+  let angle = THREE.MathUtils.degToRad(i*30);
+  sphere.rotateY(angle);
+  sphere.translateY(0.5)
+  sphere.translateZ(8);
 
+  scene.add(sphere);
+}
 
 // Use this to show information onscreen
 let controls = new InfoBox();
