@@ -22,9 +22,9 @@ createTeapot( 2.0,  0.4,  0.0, Math.random() * 0xffffff);
 createTeapot(0.0,  0.4,  2.0, Math.random() * 0xffffff);  
 createTeapot(0.0,  0.4, -2.0, Math.random() * 0xffffff);    
 
-let camPos  = new THREE.Vector3(3, 4, 8);
+let camPos  = new THREE.Vector3(0, 0.5, 0);
 let camUp   = new THREE.Vector3(0.0, 1.0, 0.0);
-let camLook = new THREE.Vector3(0.0, 0.0, 0.0);
+let camLook = new THREE.Vector3(0.0, 0.5, -1.0);
 var message = new SecondaryBox("");
 
 // Main camera
@@ -32,6 +32,11 @@ camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight,
    camera.position.copy(camPos);
    camera.up.copy( camUp );
    camera.lookAt(camLook);
+
+let cameraHolder = new THREE.Object3D()
+cameraHolder.add(camera)
+
+scene.add(cameraHolder)
 
 render();
 
@@ -47,7 +52,45 @@ function keyboardUpdate() {
 
    keyboard.update();
    
-   // DICA: Insira aqui seu código para mover a câmera
+   if(keyboard.down("up")) {
+      cameraHolder.rotateX(1);
+   }
+
+   if(keyboard.down("down")) {
+      cameraHolder.rotateX(-1);
+   }
+
+   if(keyboard.down("right")) {
+      cameraHolder.rotateY(1);
+   }
+
+   if(keyboard.down("left")) {
+      cameraHolder.rotateY(-1);
+   }
+
+   if(keyboard.down("Q")) {
+      cameraHolder.rotateZ(1);
+   }
+
+   if(keyboard.down("E")) {
+      cameraHolder.rotateZ(-1);
+   }
+
+   if(keyboard.pressed("W")) {
+      cameraHolder.translateZ(-0.1)
+   }
+
+   if(keyboard.pressed("S")) {
+      cameraHolder.translateZ(0.1)
+   }
+
+   if(keyboard.pressed("D")) {
+      cameraHolder.translateX(0.1)
+   }
+
+   if(keyboard.pressed("A")) {
+      cameraHolder.translateX(-0.1)
+   }
    
    updateCamera();
 }

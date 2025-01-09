@@ -47,7 +47,65 @@ function keyboardUpdate() {
 
    keyboard.update();
    
-   // DICA: Insira aqui seu código para mover a câmera
+   if(keyboard.down("up")) {
+      camPos.z += -0.5
+      camera.position.copy(camPos);
+   }
+
+   if(keyboard.down("down")) {
+      camPos.z += 0.5
+      camera.position.copy(camPos);
+   }
+
+   if(keyboard.down("right")) {
+      camPos.x += 0.5
+      camera.position.copy(camPos);
+   }
+
+   if(keyboard.down("left")) {
+      camPos.x += -0.5
+      camera.position.copy(camPos);
+   }
+
+   if(keyboard.down("pageup")) {
+      camPos.y += 0.5;
+      camera.lookAt(camPos);
+   }
+
+   if(keyboard.down("pagedown")) {
+      camPos.y += -0.5;
+      camera.lookAt(camPos);
+   }
+
+   if(keyboard.pressed("W")) {
+      camLook.z += 0.5;
+      camera.lookAt(camLook);
+   }
+
+   if(keyboard.pressed("S")) {
+      camLook.z += -0.5;
+      camera.lookAt(camLook);
+   }
+
+   if(keyboard.pressed("D")) {
+      camLook.x += 0.5;
+      camera.lookAt(camLook);
+   }
+
+   if(keyboard.pressed("A")) {
+      camLook.x += -0.5;
+      camera.lookAt(camLook);
+   }
+
+   if(keyboard.pressed("Q")) {
+      camLook.y += -0.5;
+      camera.lookAt(camLook);
+   }
+
+   if(keyboard.pressed("E")) {
+      camLook.y += 0.5;
+      camera.lookAt(camLook);
+   }
    
    updateCamera();
 }
