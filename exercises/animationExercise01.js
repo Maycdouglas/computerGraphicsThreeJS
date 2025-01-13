@@ -1,5 +1,6 @@
 import * as THREE from  'three';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
+import GUI from '../libs/util/dat.gui.module.js'
 import {initRenderer, 
         initCamera,
         initDefaultBasicLight,
@@ -30,24 +31,60 @@ scene.add(plane);
 // create a sphere
 let sphereGeometry = new THREE.SphereGeometry(1);
 let sphere = new THREE.Mesh(sphereGeometry, material);
+let sphere2 = new THREE.Mesh(sphereGeometry, material);
 // position the cube
-sphere.position.set(0.0, 0.5, 0.0);
+sphere.position.set(-8.0, 1, -5.0);
+sphere2.position.set(-8.0, 1, 5.0);
 // add the cube to the scene
 scene.add(sphere);
+scene.add(sphere2);
 
-// Use this to show information onscreen
-let controls = new InfoBox();
-  controls.add("Basic Scene");
-  controls.addParagraph();
-  controls.add("Use mouse to interact:");
-  controls.add("* Left button to rotate");
-  controls.add("* Right button to translate (pan)");
-  controls.add("* Scroll to zoom in/out.");
-  controls.show();
+// Variables that will be used for linear interpolation
+const lerpConfigSphere1 = {
+  destination: new THREE.Vector3(8.0, 1, -5.0),
+  alpha: 0.02,
+  move: false
+}
 
+const lerpConfigSphere2 = {
+   destination: new THREE.Vector3(8.0, 1, 5.0),
+   alpha: 0.01,
+   move: false
+ }
+
+function buildInterface() {
+   var controls = new function () {
+      this.onMoveSphere1 = function () {
+         lerpConfigSphere1.move = true;
+      };
+      this.onMoveSphere2 = function () {
+         lerpConfigSphere2.move = true;
+      };
+      this.resetSpheres = function () {
+         lerpConfigSphere1.move = false;
+         sphere.position.set(-8.0, 1, -5.0)
+
+         lerpConfigSphere2.move = false;
+         sphere2.position.set(-8.0, 1, 5.0)
+      }
+   };
+
+   let gui = new GUI();
+   let folder = gui.addFolder("Exercise 01");
+   folder.open();  // permite que a janelinha inicie aberta
+   folder.add(controls, 'onMoveSphere1').name(" ESFERA 1 ");
+   folder.add(controls, 'onMoveSphere2').name(" ESFERA 2 ");
+   folder.add(controls, 'resetSpheres').name(" RESET ");
+}
+
+buildInterface();
 render();
 function render()
 {
-  requestAnimationFrame(render);
-  renderer.render(scene, camera) // Render scene
+   if(lerpConfigSphere1.move) sphere.position.lerp(lerpConfigSphere1.destination, lerpConfigSphere1.alpha);
+   
+   if(lerpConfigSphere2.move) sphere2.position.lerp(lerpConfigSphere2.destination, lerpConfigSphere2.alpha);
+   
+   requestAnimationFrame(render);
+   renderer.render(scene, camera) // Render scene
 }
