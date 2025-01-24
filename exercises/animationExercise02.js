@@ -1,5 +1,6 @@
 import * as THREE from  'three';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
+import GUI from '../libs/util/dat.gui.module.js'
 import {initRenderer, 
         initCamera,
         initDefaultBasicLight,
@@ -27,27 +28,77 @@ scene.add( axesHelper );
 let plane = createGroundPlaneXZ(20, 20)
 scene.add(plane);
 
-// create a cube
-let cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-let cube = new THREE.Mesh(cubeGeometry, material);
-// position the cube
-cube.position.set(0.0, 2.0, 0.0);
-// add the cube to the scene
-scene.add(cube);
+// create a sphere
+let sphereGeometry = new THREE.SphereGeometry(1);
+let sphere = new THREE.Mesh(sphereGeometry, material);
+let sphere2 = new THREE.Mesh(sphereGeometry, material);
 
-// Use this to show information onscreen
-let controls = new InfoBox();
-  controls.add("Basic Scene");
-  controls.addParagraph();
-  controls.add("Use mouse to interact:");
-  controls.add("* Left button to rotate");
-  controls.add("* Right button to translate (pan)");
-  controls.add("* Scroll to zoom in/out.");
-  controls.show();
+sphere.position.set(-8.0, 1, -5.0);
+sphere2.position.set(-8.0, 1, 5.0);
 
+scene.add(sphere);
+scene.add(sphere2);
+
+// Configurações de Movimento
+const movementConfigSphere1 = {
+  velocity: new THREE.Vector3(0.2, 0, 0),
+  destination: new THREE.Vector3(8.0, 1, -5.0),
+  moving: false
+};
+
+const movementConfigSphere2 = {
+  velocity: new THREE.Vector3(0.1, 0, 0),
+  destination: new THREE.Vector3(8.0, 1, 5.0),
+  moving: false
+};
+
+function buildInterface() {
+  var controls = new function () {
+     this.moveSphere1 = function () {
+      movementConfigSphere1.moving = true;
+      console.log(movementConfigSphere1.moving)
+     };
+     this.moveSphere2 = function () {
+      movementConfigSphere2.moving = true;
+     };
+     this.resetSpheres = function () {
+      movementConfigSphere1.moving = false;
+      sphere.position.set(-8.0, 1, -5.0)
+
+      movementConfigSphere2.moving = false;
+      sphere2.position.set(-8.0, 1, 5.0)
+     }
+  };
+
+  let gui = new GUI();
+  let folder = gui.addFolder("Exercise 01");
+  folder.open();  // permite que a janelinha inicie aberta
+  folder.add(controls, 'moveSphere1').name(" ESFERA 1 ");
+  folder.add(controls, 'moveSphere2').name(" ESFERA 2 ");
+  folder.add(controls, 'resetSpheres').name(" RESET ");
+}
+
+function updatePosition(object, config) {
+  if(config.moving) {
+    const direction = new THREE.Vector3().subVectors(config.destination, object.position).normalize();
+    const step = direction.multiply(config.velocity)
+
+    if(object.position.distanceTo(config.destination) > step.length()) {
+      object.position.add(step);
+    } else {
+      object.position.copy(config.destination); // Snap to destination
+      config.moving = false; // para movimento
+    }
+  }
+}
+
+buildInterface();
 render();
 function render()
 {
+  updatePosition(sphere, movementConfigSphere1);
+  updatePosition(sphere2, movementConfigSphere2);
+     
   requestAnimationFrame(render);
   renderer.render(scene, camera) // Render scene
 }

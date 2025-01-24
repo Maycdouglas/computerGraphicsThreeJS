@@ -84,7 +84,7 @@ function render()
    if(lerpConfigSphere1.move) sphere.position.lerp(lerpConfigSphere1.destination, lerpConfigSphere1.alpha);
    
    if(lerpConfigSphere2.move) sphere2.position.lerp(lerpConfigSphere2.destination, lerpConfigSphere2.alpha);
-   
+     
    requestAnimationFrame(render);
    renderer.render(scene, camera) // Render scene
 }
