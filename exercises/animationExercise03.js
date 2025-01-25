@@ -1,53 +1,131 @@
 import * as THREE from  'three';
-import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
+import Stats from '../build/jsm/libs/stats.module.js';
+import GUI from '../libs/util/dat.gui.module.js'
+import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import {initRenderer, 
-        initCamera,
-        initDefaultBasicLight,
-        setDefaultMaterial,
-        InfoBox,
+        initCamera, 
         onWindowResize,
-        createGroundPlaneXZ} from "../libs/util/util.js";
+        initDefaultSpotlight} from "../libs/util/util.js";
 
-let scene, renderer, camera, material, light, orbit; // Initial variables
-scene = new THREE.Scene();    // Create main scene
-renderer = initRenderer();    // Init a basic renderer
-camera = initCamera(new THREE.Vector3(0, 15, 30)); // Init camera in this position
-material = setDefaultMaterial(); // create a basic material
-light = initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
-orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotation, pan, zoom etc.
+var stats = new Stats();          // To show FPS information
+var scene = new THREE.Scene();    // Create main scene
+var renderer = initRenderer();    // View function in util/utils
+var camera = initCamera(new THREE.Vector3(5, 5, 7)); // Init camera in this position
+var trackballControls = new TrackballControls( camera, renderer.domElement );
+initDefaultSpotlight(scene, new THREE.Vector3(2, 4, 2)); // Use default light
+
+// Set angles of rotation
+var angle = 0;
+var angle2 = 0;
+var angle3 = 0;
+var speed = 0.05;
+var animationOn = true; // control if animation is on or of
+
+// Show world axes
+var axesHelper = new THREE.AxesHelper( 12 );
+scene.add( axesHelper );
+
+// Base sphere
+var sphereGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+var sphereMaterial = new THREE.MeshPhongMaterial(
+    {color:'rgb(180,180,255)', shininess:"40", specular:'rgb(255,255,255'} );
+var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+scene.add(sphere);
+// Set initial position of the sphere
+sphere.translateX(1.0).translateY(1.0).translateZ(1.0);
+
+// More information about cylinderGeometry here ---> https://threejs.org/docs/#api/en/geometries/CylinderGeometry
+var cylinderGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2.0, 25);
+var cylinderMaterial = new THREE.MeshPhongMaterial( {color:'rgb(100,255,100)'});
+var cylinder = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+sphere.add(cylinder);
+
+// Rede cylinder
+var cylinderGeometry2 = new THREE.CylinderGeometry(0.07, 0.07, 1.0, 25);
+var cylinderMaterial2 = new THREE.MeshLambertMaterial( {color:'rgb(255,100,100)'} );
+var cylinderMaterial34 = new THREE.MeshLambertMaterial( {color:'rgb(220, 250, 85)'} );
+var cylinder2 = new THREE.Mesh( cylinderGeometry2, cylinderMaterial2 );
+let cylinder3 = new THREE.Mesh( cylinderGeometry2, cylinderMaterial34);
+let cylinder4 = new THREE.Mesh( cylinderGeometry2, cylinderMaterial34);
+
+cylinder.add(cylinder2);
+cylinder2.add(cylinder3);
+cylinder2.add(cylinder4);
 
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 
-// Show axes (parameter is size of each axis)
-let axesHelper = new THREE.AxesHelper( 12 );
-scene.add( axesHelper );
-
-// create the ground plane
-let plane = createGroundPlaneXZ(20, 20)
-scene.add(plane);
-
-// create a cube
-let cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-let cube = new THREE.Mesh(cubeGeometry, material);
-// position the cube
-cube.position.set(0.0, 2.0, 0.0);
-// add the cube to the scene
-scene.add(cube);
-
-// Use this to show information onscreen
-let controls = new InfoBox();
-  controls.add("Basic Scene");
-  controls.addParagraph();
-  controls.add("Use mouse to interact:");
-  controls.add("* Left button to rotate");
-  controls.add("* Right button to translate (pan)");
-  controls.add("* Scroll to zoom in/out.");
-  controls.show();
-
+buildInterface();
 render();
+
+function rotateCylinder()
+{
+  // More info:
+  // https://threejs.org/docs/#manual/en/introduction/Matrix-transformations
+  cylinder.matrixAutoUpdate = false;
+  cylinder2.matrixAutoUpdate = false;
+  cylinder3.matrixAutoUpdate = false;
+  cylinder4.matrixAutoUpdate = false;
+
+  // Set angle's animation speed
+  if(animationOn)
+  {
+    angle+=speed;
+    angle2+=speed*2;
+    
+    var mat4 = new THREE.Matrix4();
+    cylinder.matrix.identity();  // reset matrix
+    cylinder2.matrix.identity();  // reset
+    cylinder3.matrix.identity();  // reset
+    cylinder4.matrix.identity();  // reset
+
+    // Will execute T1 and then R1
+    cylinder.matrix.multiply(mat4.makeRotationZ(angle)); // R1
+    cylinder.matrix.multiply(mat4.makeTranslation(0.0, 1.0, 0.0)); // T1
+
+    // Will execute R2, T1 and R1 in this order
+    cylinder2.matrix.multiply(mat4.makeRotationY(angle2)); // R1
+    cylinder2.matrix.multiply(mat4.makeTranslation(0.0, 1.0, 0.0)); // T1
+    cylinder2.matrix.multiply(mat4.makeRotationX(THREE.MathUtils.degToRad(90))); // R2
+
+    cylinder3.matrix.multiply(mat4.makeRotationY(angle2)); // R1
+    cylinder3.matrix.multiply(mat4.makeTranslation(0.0, 0.5, 0.0)); // T1
+    cylinder3.matrix.multiply(mat4.makeRotationZ(THREE.MathUtils.degToRad(90))); // R2
+
+    cylinder4.matrix.multiply(mat4.makeRotationY(-angle2)); // R1
+    cylinder4.matrix.multiply(mat4.makeTranslation(0.0, -0.5, 0.0)); // T1
+    cylinder4.matrix.multiply(mat4.makeRotationZ(THREE.MathUtils.degToRad(90))); // R2
+
+  }
+}
+
+function buildInterface()
+{
+  var controls = new function ()
+  {
+    this.onChangeAnimation = function(){
+      animationOn = !animationOn;
+    };
+    this.speed = 0.05;
+
+    this.changeSpeed = function(){
+      speed = this.speed;
+    };
+  };
+
+  // GUI interface
+  var gui = new GUI();
+  gui.add(controls, 'onChangeAnimation',true).name("Animation On/Off");
+  gui.add(controls, 'speed', 0.05, 0.5)
+    .onChange(function(e) { controls.changeSpeed() })
+    .name("Change Speed");
+}
+
 function render()
 {
+  stats.update(); // Update FPS
+  trackballControls.update();
+  rotateCylinder();
   requestAnimationFrame(render);
   renderer.render(scene, camera) // Render scene
 }
